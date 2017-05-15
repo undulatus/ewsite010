@@ -1,0 +1,13 @@
+<ul class="nav navbar-nav navbar-right" *ngIf="showMenu">
+  <li dropdown (isOpenChange)="toggled($event)">
+    <a href dropdownToggle (click)="false">
+      <img src="{{currentUser.imageUrl}}" height="30" width="30" class="profile-image img-circle" />{{currentUser.username}}
+      <span class="caret"></span></a>
+    <ul *dropdownMenu role="menu" class="dropdown-menu" >
+      <li role="menuitem"><a href="#" class="dropdown-item">Profile</a></li>
+      <li role="menuitem"><a href="#" class="dropdown-item">Preferences</a></li>
+      <li class="divider dropdown-divider"></li>
+      <li role="menuitem"><a href="#" (click)="logout()" class="dropdown-item">Sign Out</a></li>
+    </ul>
+  </li>
+</ul>

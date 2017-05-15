@@ -1,0 +1,40 @@
+<div class="page-header">
+  <h1>Worksheet [version name]</h1>
+</div>
+<div class="container">
+  <form>
+    <div class="form-group col-md-12">
+      <label for="projectName">Project Name</label>
+      <input type="text" class="form-control" id="projectName" required>
+    </div>
+
+    <div class="form-group col-md-12">
+      <label for="marketCircle">Market Circle</label>
+      <select class="form-control" id="marketCircle" required>
+        <option *ngFor="let mc of marketCircles" [value]="mc">{{mc}}</option>
+      </select>
+    </div>
+
+    <div class="form-group col-md-12">
+      <label for="serviceLine">Service Line</label>
+      <select class="form-control" id="serviceLine" required>
+        <option *ngFor="let sl of serviceLines" [value]="sl">{{sl}}</option>
+      </select>
+    </div>
+
+    <div class="form-group col-md-12">
+      <label for="projectDuration">Project Duration</label>
+      <div class="input-group">
+        <input type="text" class="form-control" id="projectDuration" required>
+        <div class="input-group-addon">weeks</div>
+      </div>
+    </div>
+
+    <div class="form-group col-md-12">
+      <label for="serviceLine">Projected Start Date</label>
+      <my-date-picker [options]="datePickerOptions" (dateChanged)="onDateChanged($event)"></my-date-picker>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save as New Version</button>
+  </form>
+</div>

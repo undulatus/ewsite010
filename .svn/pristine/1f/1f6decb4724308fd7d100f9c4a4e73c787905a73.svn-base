@@ -1,0 +1,18 @@
+import { Routes, RouterModule } from '@angular/router';
+
+import { AuthGuard, LoginComponent } from './guard/index';
+import { DashboardComponent } from './dashboard/index';
+import { WorksheetComponent } from './worksheet/index';
+
+const appRoutes: Routes = [
+    { path: 'home', component: DashboardComponent, canActivate: [AuthGuard] },
+    { path: 'worksheet/:mode/:opportunityId', component: WorksheetComponent, canActivate: [AuthGuard] },
+    { path: 'login', component: LoginComponent },
+    
+    // otherwise redirect to home
+    { path: '**', redirectTo: 'home' }
+];
+
+export const  routing = RouterModule.forRoot(appRoutes);
+
+export const routedComponents = [LoginComponent, DashboardComponent, WorksheetComponent];

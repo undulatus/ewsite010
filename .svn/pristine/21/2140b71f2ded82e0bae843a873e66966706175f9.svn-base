@@ -1,0 +1,310 @@
+<div class="padding-top-10 padding-left-15 padding-right-15 padding-bottom-0 component-page-holder">
+
+	<div id="opportunityInformation" class="">
+		<form>
+			<div class="row form-group">
+				<div class="col-xs-offset-9 col-xs-2 margin-top-10" [ngClass]="{'margin-top-15 padding-left-30': mode == 'create'}">
+					<span *ngIf="mode == 'create'">Version 1</span>
+					<select *ngIf="mode == 'edit' || mode == 'view'" class="form-control" id="version" required>
+						<option *ngFor="let vr of versions; let i = index" [value]="i + 1">{{vr}}</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="opportunityName" class="col-xs-offset-1 col-xs-2">Opportunity Name</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #opportunityNameView>Dan Opportunity</span>
+					<input *ngIf="mode == 'edit' || mode == 'create'" #opportunityNameEdit (blur)="updateOpportunityName(opportunityNameEdit)"
+					 type="text" class="form-control" id="opportunityName" name="opportunityName" required>
+				</div>
+
+				<label for="durationGranularity" class="col-xs-offset-2 col-xs-2">Duration Granularity</label>
+				<div class="col-xs-2">
+					<select #durationGranularity (change)="updateDurationGranularity(durationGranularity)" class="form-control" id="durationGranularity"
+					 name="durationGranularity" required>
+						<option value="monthly">Month</option>
+						<option value="weekly">Week</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="businessUnit" class="col-xs-offset-1 col-xs-2">Business Unit</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #businessUnitView>Health Care</span>
+					<select *ngIf="mode == 'edit' || mode == 'create'" #businessUnitEdit (change)="updateBusinessUnit(businessUnitEdit)" class="form-control"
+					 id="businessUnit" name="businessUnit" required>
+						<option value="0"></option>
+						<option *ngFor="let businessUnit of businessUnits" [value]="businessUnit.businessUnitId">{{businessUnit?.businessUnitName}}</option>
+					</select>
+				</div>
+
+				<label for="opportunityDuration" class="col-xs-offset-2 col-xs-2">Opportunity Duration</label>
+				<div class="col-xs-2">
+					<input #opportunityDuration (blur)="updateOpportunityDuration(opportunityDuration)" type="number" class="form-control" id="opportunityDuration"
+					 name="opportunityDuration" min="1" [max]="durationGranularity.value == 'monthly' ? 12 : 48" required>
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="serviceType" class="col-xs-offset-1 col-xs-2">Service Type</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #serviceTypeView>Application Development</span>
+					<select *ngIf="mode == 'edit' || mode == 'create'" #serviceTypeEdit (change)="updateServiceType(serviceTypeEdit)" class="form-control"
+					 id="serviceType" name="serviceType" required>
+						<option value="0"></option>
+						<option *ngFor="let serviceType of serviceTypes" [value]="serviceType.serviceTypeId">{{serviceType?.serviceTypeName}}</option>
+					</select>
+				</div>
+
+				<label for="projectStartDate" class="col-xs-offset-2 col-xs-2">Projected Start Date</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #projectStartDateView>April 17, 2017</span>
+					<my-date-picker *ngIf="mode == 'edit' || mode == 'create'" #projectStartDateEdit [options]="datePickerOptions" (dateChanged)="updateProjectStartDate($event)"></my-date-picker>
+					<!--<my-date-picker *ngIf="mode == 'edit' || mode == 'create'" #projectStartDateEdit [(ngModel)]="projectStartDate" [options]="datePickerOptions" (dateChanged)="updateProjectStartDate($event)"></my-date-picker>-->
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="opportunityStatus" class="col-xs-offset-7 col-xs-2">Opportunity Status</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #opportunityStatusView>Active</span>
+					<input *ngIf="mode == 'edit' || mode == 'create'" #opportunityStatusEdit (blur)="updateOpportunityStatus(opportunityStatusEdit)"
+					 type="text" class="form-control" id="opportunityStatus" name="opportunityStatus" required>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<!--<div id="activityBreakdown" class="container">
+		<activity-breakdown (activityId)="addActivityId($event)" [mode]="mode" [activities]="activities" [roles]="roles" [opportunityDuration]="opportunityDuration.value" [durationGranularity]="opportunity.durationGranularity.value" [isServiceTypeValid]="isServiceTypeValid"></activity-breakdown>
+	</div>-->
+
+
+
+	<div id="activityBreakdown" class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<ul #activityList id="activity-list" class="nav nav-tabs">
+					<li>
+						<!--<li *ngIf="serviceType.value == 0">-->
+						<button (click)="addActivityModal.show()" id="addActivityButton" class="btn btn-default">
+							<span class="glyphicon glyphicon-plus"></span>
+						</button>
+					</li>
+					<li *ngFor="let opportunityActivity of opportunityActivities; let i = index" [ngClass]="{'active': selectedIdx == i}" id="opportunityActivityId-{{opportunityActivity.opportunityActivityId}}"
+					 class="nav-item">
+						<a class="nav-link" (click)="selectItem(i)">
+							<span>{{opportunityActivity?.activity.activityName}}</span>
+							<a *ngIf="mode == 'edit' || mode == 'create'" (click)="deleteActivity(opportunityActivity)" class="glyphicon glyphicon-remove"></a>
+						</a>
+						<!--<delete-modal #deleteActivityModal [elementId]="opportunityActivity.opportunityActivityId" [body]="opportunityActivity.activity.activityName" [category]="'Activity'"></delete-modal>-->
+					</li>
+				</ul>
+			</div>
+
+			<div class="col-xs-12">
+				<div class="row">
+					<div class="col-xs-5">
+						<div id="activityBreakdown-header" class="row">
+							<div class="col-xs-4 padding-20px-5px">
+								<a *ngIf="mode == 'edit' || mode == 'create'" (click)="addRoleModal.show()" class="glyphicon glyphicon-plus-sign pull-left"></a>
+								<span>Role</span>
+							</div>
+							<div class="col-xs-4 padding-20px-5px">
+								<span>Technology / Practice</span>
+							</div>
+							<div class="col-xs-2 padding-20px-5px">
+								<span>Pay Level</span>
+							</div>
+							<div class="col-xs-2 padding-20px-5px">
+								<span>Billable</span>
+							</div>
+						</div>
+						<div *ngFor="let tab of resourceSpecifications; let i = index" class="row activityBreakdown-resource-row" [ngClass]="{'hidden': selectedIdx == i, 'show': selectedIdx != i}">
+						<!--<div *ngFor="let tab of tabs.slice().reverse(); let i = index" class="row activityBreakdown-resource-row" [ngClass]="{'hidden': selectedIdx == i, 'show': selectedIdx != i}">-->
+							<div *ngFor="let resource of tab.resource; let j = index" id="res{{i+1}}-info{{j+1}}" class="activityBreakdown-resource-info">
+								<div class="col-xs-4">
+									<a *ngIf="mode == 'edit' || mode == 'create'" (click)="deleteResourceModal.show()" class="glyphicon glyphicon-trash pull-left"></a>
+									<!--<delete-modal *ngIf="mode == 'edit' || mode == 'create'" #deleteResourceModal [body]="resource.role" [category]="'Resource'"></delete-modal>-->
+									<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.role}}</span>
+									<select *ngIf="mode == 'edit' || mode == 'create'" #activityRole (change)="getPracticesPerRole(activityRole)" class="form-control pull-right"
+									 id="activityRole" name="activityRole" required>
+										<option value="0"></option>
+										<option *ngFor="let role of roles" [value]="role.roleId">{{role?.roleName}}</option>
+									</select>
+								</div>
+								<div class="col-xs-4">
+									<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.technology}}</span>
+									<select *ngIf="mode == 'edit' || mode == 'create'" #activityTechnology class="form-control" id="activityTechnology"
+									 name="activityTechnology" required>
+										<option value="0"></option>
+										<option *ngFor="let practice of practices" [value]="practice.practiceId">{{practice?.practiceName}}</option>
+									</select>
+								</div>
+								<div class="col-xs-2">
+									<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.paylevel}}</span>
+									<select *ngIf="mode == 'edit' || mode == 'create'" #activityPayLevel class="form-control" id="activityPayLevel"
+									 name="activityPayLevel" required>
+										<option value="0"></option>
+										<option *ngFor="let payLevel of payLevels" [value]="payLevel.payLevelId">{{payLevel?.payLevelName}}</option>
+									</select>
+								</div>
+								<div class="col-xs-2">
+									<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.billable}}</span>
+									<select *ngIf="mode == 'edit' || mode == 'create'" #activityBillability class="form-control" id="activityBillability"
+									 name="activityBillability" required>
+										<option value=""></option>
+										<option value="1">Yes</option>
+										<option value="0">No</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-7">
+						<div id="activityBreakdown-dateHeader" class="row">
+							<div class="col-xs-12 padding-5 text-center">
+								<span *ngIf="durationGranularity.value == 'monthly'">Months</span>
+								<span *ngIf="durationGranularity.value == 'weekly'">Weeks</span>
+
+							</div>
+						</div>
+						<div class="row activityBreakdown-period-row">
+							<div>
+								<div class="col-xs-12">
+									<div *ngFor="let a of createRange(opportunityDuration.value); let j = index" class="period-width-{{opportunityDuration.value}} period-div-header padding-5 text-center">
+										<span>{{ j + 1 }}</span>
+									</div>
+								</div>
+							</div>
+							<div>
+								<div *ngFor="let tab of tabs.slice().reverse(); let i = index" class="col-xs-12 activityBreakdown-resource-info">
+									<div *ngFor="let a of createRange(opportunityDuration.value); let j = index" id="res{{i+1}}-per{{j+1}}" class="period-width-{{opportunityDuration.value}} period-div-content padding-5 text-center">
+										<span *ngIf="mode == 'view'" class="line-height-30px">0.5</span>
+										<input *ngIf="mode == 'edit' || mode == 'create'" type="text" placeholder="0" class="form-control" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div bsModal #addActivityModal="bs-modal" id="addActivityModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addActivityModalLabel"
+		 aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title pull-left">Add Activity</h4>
+						<button type="button" class="close pull-right" aria-label="Close" (click)="addActivityModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row">
+								<span for="addActivityModalSelect">Activity:</span>
+								<div>
+									<select #addActivityModalSelect class="form-control" id="addActivityModalSelect" name="addActivityModalSelect" required>
+										<option value="0"></option>
+										<option *ngFor="let opportunityActivity of opportunityActivities" [value]="opportunityActivity?.activity.activityId">{{opportunityActivity?.activity.activityName}}</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+						<button type="button" class="btn btn-primary btn-sm" (click)="confirmAddActivityModal(addActivityModalSelect.value)">
+							Confirm
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div bsModal #addRoleModal="bs-modal" id="addRoleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addRoleModalLabel"
+		 aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title pull-left">Add Resource</h4>
+						<button type="button" class="close pull-right" aria-label="Close" (click)="addRoleModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row">
+								<span for="addRoleModalSelect">Role:</span>
+								<div>
+									<select #addRoleModalSelect class="form-control" id="addRoleModalSelect" name="addRoleModalSelect" required>
+										<option value="0"></option>
+										<option *ngFor="let role of roles" [value]="role.roleId">{{role?.roleName}}</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+						<button type="button" class="btn btn-primary btn-sm" (click)="confirmRoleModal(addRoleModalSelect.value)">
+							Confirm
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div bsModal #deleteActivityModal="bs-modal" id="deleteActivityModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteActivityModalLabel"
+		 aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title pull-left">Delete Activity</h4>
+						<button type="button" class="close pull-right" aria-label="Close" (click)="deleteActivityModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="text-center">
+							<span>{{selectedOpportunityActivityName}}</span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+						<button type="button" class="btn btn-primary btn-sm" (click)="confirmDeleteActivity(selectedOpportunityActivityId)">
+							Confirm
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+
+
+
+	<div id="activitySummary" class="container">
+		<activity-summary></activity-summary>
+	</div>
+
+	<div id="oppotunityButtons" class="container">
+		<div class="pull-right">
+			<button (click)="createOpportunity()" class="btn btn-primary">Create</button>
+		</div>
+	</div>
+
+</div>

@@ -1,0 +1,219 @@
+/*.container .row {
+    margin: 5px 0;
+}*/
+
+#opportunityInformation {
+    padding: 15px;
+}
+
+#opportunityInformation .row.form-group{
+    height: 35px;
+}
+
+#activitySummary, #activityBreakdown, #activitySummaryFTE {
+    padding-bottom: 15px;
+}
+
+.accordion-toggle > div {
+    border: 0;
+}
+
+#oppotunityButtons {
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+
+
+/* Activity Breakdown */
+
+#activity-list > li > a {
+    color: #333 !important;
+}
+
+#activity-list > li > a > .glyphicon, .activityBreakdown-resource-info .glyphicon {
+    color: #d9534f;
+}
+
+.activityBreakdown-resource-info .glyphicon-edit {
+    color: #76abc5;
+}
+
+.activityBreakdown-resource-info .glyphicon-trash {
+     margin-left: 3px;
+     margin-top: 8px;
+}
+
+#activity-list > li > a > .glyphicon:hover, .activityBreakdown-resource-info .glyphicon:hover {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#activity-list > li.active > a {
+    background: #bdbdbd;
+    color: #fff !important;
+}
+
+#addActivityButton .glyphicon {
+    color: #5cb85c;
+}
+
+#activityBreakdown-header {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    border-style: solid;
+    border-radius: 5px 0 0 0;
+    border-width: 1px;
+}
+
+#activityBreakdown-header .glyphicon-plus-sign {
+    margin: 3px 9px 3px 3px;
+}
+
+#activityBreakdown-header > div:nth-child(-n+3) {
+    border-right: solid #bce8f1 1px;
+}
+
+.activityBreakdown-resource-row {
+    border-left: solid #ccc 1px;
+}
+
+.activityBreakdown-resource-info > div {
+    border-bottom: solid #ccc 1px;
+    border-right: solid #ccc 1px;
+    height: 45px;
+    padding: 5px;
+}
+
+.line-height-30px {
+    line-height: 30px;
+}
+
+
+.activityBreakdown-padding-edit select {
+    margin: -7px 10px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#activityRole {
+    width: 82%;
+}
+
+#activityBreakdown-dateHeader {
+    color: #a94442;
+    background-color: #FFCDD2;
+    border-color: #eab3b2;
+    border-style: solid;
+    border-radius: 0 5px 0 0;
+    border-width: 0 0 0 1px;
+}
+
+#activityBreakdown-dateHeader .col-xs-12 {
+    border-bottom: solid #eab3b2 1px;
+    border-right: solid #eab3b2 1px;
+    border-radius: 0 5px 0 0;
+}
+
+.activityBreakdown-period-row {
+    position: relative;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    vertical-align: middle;
+}
+
+.activityBreakdown-period-row .col-xs-12 {
+    padding: 0;
+}
+
+.activityBreakdown-period-row div:first-child .col-xs-12:first-child {
+    border-left: solid #eab3b2 1px;
+}
+
+
+
+.period-div-header {
+    display: inline-block;
+    border-bottom: solid #eab3b2 1px;
+    border-right: solid #eab3b2 1px;
+    color: #a94442;
+    background-color: #ffcdd2;
+}
+
+.period-div-content {
+    border-bottom: solid #ccc 1px;
+    border-right: solid #ccc 1px;
+    display: inline-block;
+}
+
+.period-width-1 {
+    width: calc(100% / 1);
+}
+.period-width-2 {
+    width: calc(100% / 2);
+}
+.period-width-3 {
+    width: calc(100% / 3);
+}
+.period-width-4 {
+    width: calc(100% / 4);
+}
+.period-width-5 {
+    width: calc(100% / 5);
+}
+.period-width-6 {
+    width: calc(100% / 6);
+}
+.period-width-7 {
+    width: calc(100% / 7);
+}
+.period-width-8 {
+    width: calc(100% / 8);
+}
+.period-width-9 {
+    width: calc(100% / 9);
+}
+.period-width-10 {
+    width: calc(100% / 10);
+}
+.period-width-11 {
+    width: calc(100% / 11);
+}
+.period-width-12, .period-width-13, .period-width-14, .period-width-15, .period-width-16, .period-width-17, .period-width-18, .period-width-19, .period-width-20, .period-width-21, .period-width-22, .period-width-23, .period-width-24, .period-width-25, .period-width-26, .period-width-27, .period-width-28, .period-width-29, .period-width-30, .period-width-31, .period-width-32, .period-width-33, .period-width-34, .period-width-35, .period-width-36, .period-width-37, .period-width-38, .period-width-39, .period-width-40, .period-width-41, .period-width-42, .period-width-43, .period-width-44, .period-width-45, .period-width-46, .period-width-47, .period-width-48 {
+    width: calc(100% / 12);
+}
+
+
+
+#addActivityButton {
+    margin: 5px;
+}
+
+.padding-20px-5px {
+    padding: 20px 5px;
+}
+
+.padding-10px-5px {
+    padding: 10px 5px;
+}
+
+.nav .nav-item {
+    cursor: pointer;
+}
+
+
+
+/* add modal */
+#activityModal .container-fluid {
+    padding: 0 30px;
+}
+
+.modal-body .row {
+    margin-bottom: 10px;
+}
+
+#activityBillable {
+    margin: 0 5px 0 10px;
+}

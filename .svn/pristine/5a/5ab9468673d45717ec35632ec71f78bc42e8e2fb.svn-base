@@ -1,0 +1,14 @@
+{
+  "/estimate-worksheet": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/pw-auth": {
+    "target": "http://localhost:8081/",
+    "secure": false
+  },
+  "/googletoken-validator": {
+    "target": "http://localhost:8082/",
+    "secure": false
+  }
+}

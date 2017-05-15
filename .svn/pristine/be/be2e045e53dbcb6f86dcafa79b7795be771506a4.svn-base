@@ -1,0 +1,139 @@
+<div class="container">
+    <div class="container">
+        <ul #activityList id="activity-list" class="nav nav-tabs">
+            <li>
+                <button (click)="addActivity()" id="addActivityButton" class="btn btn-default">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </li>
+            <li *ngFor="let tab of tabs; let i = index" [ngClass]="{'active': selectedIdx == i}" id="act{{i+1}}" class="nav-item">
+                <a class="nav-link" (click)="selectItem(i)">
+                    <span>{{tab.title}}</span>
+                    <a (click)="deleteActivityModal.show()" class="glyphicon glyphicon-remove"></a>
+                </a>
+                <delete-modal #deleteActivityModal [body]="tab.title" [category]="'Activity'"></delete-modal>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-5">
+                <div id="activityBreakdown-header" class="row">
+                    <div class="col-xs-4 padding-20px-5px">
+                        <span>Role</span>
+                        <!--<button (click)="check()">check</button>-->
+                    </div>
+                    <div class="col-xs-4 padding-20px-5px">
+                        <span>Technology / Practice</span>
+                    </div>
+                    <div class="col-xs-2 padding-20px-5px">
+                        <span>Pay Level</span>
+                    </div>
+                    <div class="col-xs-2 padding-20px-5px">
+                        <span>Billable</span>
+                    </div>
+                </div>
+                <div *ngFor="let tab of tabs.slice().reverse(); let i = index" class="row activityBreakdown-resource-row" [ngClass]="{'hidden': selectedIdx == i, 'show': selectedIdx != i}">
+                    <div *ngFor="let resource of tab.resource; let j = index" id="res{{i+1}}-info{{j+1}}" class="activityBreakdown-resource-info">
+                        <div class="col-xs-4 activityBreakdown-padding-edit">
+                            <!--<a (click)="editResourceModal.show()" class="glyphicon glyphicon-edit"></a>
+                            <edit-resource-modal #editResourceModal></edit-resource-modal>-->
+                                <a (click)="deleteResourceModal.show()" class="glyphicon glyphicon-trash pull-left margin-left-3"></a>
+                                <delete-modal #deleteResourceModal [body]="resource.role" [category]="'Resource'"></delete-modal>
+                                <!--<span class="margin-left-10">{{resource.role}}</span>-->
+                                <select #activityRole [disabled]="!isServiceTypeValid" (change)="getPracticesPerRole(activityRole)" class="form-control pull-right" id="activityRole" name="activityRole" required>
+                                    <option value="0"></option>
+                                    <option *ngFor="let role of roles" [value]="role.roleId">{{role.roleName}}</option>
+                                </select>
+                        </div>
+                        <div class="col-xs-4 activityBreakdown-padding-edit">
+                            <!--<span class="margin-left-10">{{resource.technology}}</span>-->
+                            <select #activityTechnology [disabled]="!isRoleValid" class="form-control" id="activityTechnology" name="activityTechnology" required>
+								<option value="0"></option>
+								<option *ngFor="let practice of practices" [value]="practice.practiceId">{{practice.practiceName}}</option>
+							</select>
+                        </div>
+                        <div class="col-xs-2 activityBreakdown-padding-edit">
+                            <!--<span class="margin-left-10">{{resource.paylevel}}</span>-->
+                            <select #activityPayLevel [disabled]="!isRoleValid" class="form-control" id="activityPayLevel" name="activityPayLevel" required>
+								<option value="0"></option>
+								<option *ngFor="let payLevel of payLevels" [value]="payLevel.payLevelId">{{payLevel.payLevelName}}</option>
+							</select>
+                        </div>
+                        <div class="col-xs-2 activityBreakdown-padding-edit">
+                            <!--<span class="margin-left-10">{{resource.billable}}</span>-->
+                            <select #activityBillability [disabled]="!isRoleValid" class="form-control" id="activityBillability" name="activityBillability" required>
+								<option value=""></option>
+								<option value="1">Yes</option>
+                                <option value="0">No</option>
+							</select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-7">
+                <div id="activityBreakdown-dateHeader" class="row">
+                    <div class="col-xs-12 padding-5 text-center">
+                        <span *ngIf="scheduleGranularity == 'month'">Months</span>
+                        <span *ngIf="scheduleGranularity == 'week'">Weeks</span>
+                    </div>
+                </div>
+                <div class="row activityBreakdown-period-row">
+                    <div>
+                        <div class="col-xs-12">
+                            <div *ngFor="let a of createRange(opportunityDuration); let j = index" class="period-width-{{opportunityDuration}} period-div-header padding-5 text-center">
+                                <span>{{ j + 1 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div *ngFor="let tab of tabs.slice().reverse(); let i = index" class="col-xs-12">
+                            <div *ngFor="let a of createRange(opportunityDuration); let j = index" id="res{{i+1}}-per{{j+1}}" class="period-width-{{opportunityDuration}} period-div-content padding-5 text-center">
+                                <!--<span>0.5</span>-->
+                                <input type="text" placeholder="0" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div bsModal #activityModal="bs-modal" id="activityModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="activityModalLabel"
+ aria-hidden="true">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title pull-left">Add Activity</h4>
+				<button type="button" class="close pull-right" aria-label="Close" (click)="activityModal.hide()">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="container-fluid">
+					<div class="row">
+						<span for="addModalActivity">Activity:</span>
+						<div>
+							<select #addModalActivity [(ngModel)]="activity" class="form-control" id="addModalActivity" name="addModalActivity" required>
+								<option value="0"></option>
+                                <option *ngFor="let activity of activities" [value]="activity.activityId">{{activity.activityName}}</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default btn-sm" (click)="cancelAction()">
+					Cancel
+				</button>
+				<button [disabled]="isSelectActivityValid()" type="button" class="btn btn-primary btn-sm" (click)="confirmAction()">
+					Confirm
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

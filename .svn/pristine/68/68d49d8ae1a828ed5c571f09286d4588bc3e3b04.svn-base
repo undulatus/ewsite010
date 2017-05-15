@@ -1,0 +1,44 @@
+accordion span {
+    font-size: 14px;
+}
+
+#activitySummary > div {
+    margin: 0;
+}
+
+#activitySummary-header {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    border-style: solid;
+    border-radius: 5px;
+    border-width: 1px 1px 0 1px;
+}
+
+#activitySummary-header > div {
+    padding: 10px 30px;
+}
+
+#activitySummary-header > div:nth-child(-n+2) {
+    border-right: solid #bce8f1 2px;
+}
+
+
+
+/* activity FTE */
+
+#activitySummaryFTE-category {
+    margin-top: 10px;
+    border-left: solid #ccc 1px;
+    border-top: solid #ccc 1px;
+}
+
+#activitySummaryFTE-detail > .row:first-child > div {
+    margin-top: 10px;
+    border-top: solid #ccc 1px;
+}
+
+#activitySummaryFTE-category > .row > div, #activitySummaryFTE-detail > .row > div {
+    border-right: solid #ccc 1px;
+    border-bottom: solid #ccc 1px;
+}

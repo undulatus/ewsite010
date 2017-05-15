@@ -1,0 +1,78 @@
+<div class="padding-top-10 padding-left-15 padding-right-15 padding-bottom-0 component-page-holder">
+  <a *ngFor="let opportunity of myOpp" class="col-1-4">
+    <div class="module hero">
+      <h4>{{opportunity.projectStatus}}</h4>
+    </div>
+  </a>
+  <div class="row padding-left-20 margin-bottom-15">
+    <div class="col-md-12 col-lg-12 col-sm-12">
+      <span class="font-24 primary-text-color">Opportunities</span>
+    </div>
+    <div class="col-md-12 col-lg-12 col-sm-12">
+      <button type="button" class="btn btn-primary pull-right" (click)="createOpportunity()">Create New</button>
+    </div>
+  </div>
+  <div class="row padding-left-20">
+    <div class="col-md-12 col-lg-12 col-sm-12">
+      <div class="panel panel-default">
+        <div class="tablehead-bg">My Worksheets</div>
+        <div class="panel-body">
+          <div class="col-md-12 col-lg-12 col-sm-12">
+            <table id="myOpportunityTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="row-border table table-hover full-width">
+              <thead>
+                <th>Opportunity Name</th>
+                <th>Business Unit</th>
+                <th>Status</th>
+                <th>Date Modified</th>
+                <th></th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let myOpportunity of myOpportunities">
+                  <td class="" >{{myOpportunity?.opportunityName}}</td>
+                  <td class="" >{{myOpportunity?.marketCircle?.marketCircleName}}</td>
+                  <td class="" >{{myOpportunity?.opportunityStatus}}</td>
+                  <td class="" >{{myOpportunity?.projectStartDate | date}}</td>
+                  <td class="" ><div (click)="viewOpportunity(myOpportunity?.opportunityId)" class="text-center"><div class="btn-group"><button  id="{{myOpportunity?.opportunityId}}" class="btn btn-sm btn-default margin-right-5" type="button"><span class="padding-right-5 glyphicon glyphicon-eye-open" aria-hidden="true"></span>View Details</button>
+                     <button (click)="updateOpportunity(myOpportunity?.opportunityId)" class="btn btn-sm btn-primary margin-right-5" type="button"><span class="padding-right-5 glyphicon glyphicon-refresh"></span>Update</button>
+                     <button (click)="lockUnlockOpportunity(myOpportunity?.documentStatus , myOpportunity?.opportunityId)" class="btn btn-sm btn-default margin-right-5 lock-btn-width" type="button">{{myOpportunity?.documentStatus | uppercase}}</button>
+            </div></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row padding-left-20">
+    <div class="col-md-12 col-lg-12 col-sm-12">
+      <div class="panel panel-default">
+        <div class="tablehead-bg">Other Worksheets</div>
+        <div class="panel-body">
+          <div class="col-md-12 col-lg-12 col-sm-12">
+            <table id="otherOpportunityTable" datatable [dtOptions]="dtOptions2" [dtTrigger]="dtTrigger2" class="row-border table table-hover full-width">
+              <thead>
+                <th>Opportunity Name</th>
+                <th>Business Unit</th>
+                <th>Status</th>
+                <th>Date Modified</th>  
+                <th></th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let opportunity of opportunities">
+                  <td>{{opportunity?.opportunityName}}</td>
+                  <td>{{opportunity?.marketCircle?.marketCircleName}}</td>
+                  <td>{{opportunity?.opportunityStatus}}</td>
+                  <td>{{opportunity?.projectStartDate | date}}</td>
+                  <td><div class="text-center"><div class="btn-group"><button id="{{opportunity?.opportunityId}}" class="btn btn-sm btn-default margin-right-5" type="button"><span class="padding-right-5 glyphicon glyphicon-eye-open" aria-hidden="true"></span>View Details</button>
+            <button class="btn btn-sm btn-primary margin-right-5" type="button"><span class="padding-right-5 glyphicon glyphicon-refresh"></span>Update</button>
+            </div></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

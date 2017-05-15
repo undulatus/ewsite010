@@ -1,0 +1,114 @@
+<!--<div class="container">-->
+    <div id="activitySummary-header" class="row">
+        <div class="col-xs-5">
+            <span>Activity</span>
+        </div>
+        <div class="col-xs-3">
+            <span>Activity Duration (month)</span>
+        </div>
+        <div class="col-xs-4">
+            <span>Start (month)</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <accordion>
+            <accordion-group *ngFor="let accordion of accordions" attr.id="{{accordion.id}}">
+                <div class="row" accordion-heading>
+                    <div class="col-xs-5">
+                        <span>{{accordion.activity}}</span>
+                    </div>
+                    <div class="col-xs-3">
+                        <span>{{accordion.duration}}</span>
+                    </div>
+                    <div class="col-xs-4">
+                        <span>{{accordion.start}}</span>
+                        <!--<i class="pull-right float-xs-right glyphicon" [ngClass]="accordion.id?.isOpen ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"></i>-->
+                        <!--<i class="pull-right float-xs-right glyphicon" [ngClass]="{'glyphicon-chevron-down': accordion.id?.isOpen, 'glyphicon-chevron-right': !accordion.id?.isOpen}"></i>-->
+                    </div>
+                </div>
+                <table datatable [dtOptions]="dtActivitySummaryOptions" class="row-border hover">
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Technology/Practice</th>
+                            <th>Pay Level</th>
+                            <th>Start (month)</th>
+                            <th>Duration (month)</th>
+                            <th>FTE</th>
+                            <th>Billable</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let resource of accordion.resource">
+                            <td>{{resource?.role}}</td>
+                            <td>{{resource?.technology}}</td>
+                            <td>{{resource?.paylevel}}</td>
+                            <td>{{resource?.start}}</td>
+                            <td>{{resource?.duration}}</td>
+                            <td>{{resource?.fte}}</td>
+                            <td>{{resource?.billable}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </accordion-group>
+        </accordion>
+    </div>
+
+    <div class="row">
+        <div id="activitySummaryFTE-category" class="col-xs-5">
+            <div class="row">
+                <div class="col-xs-12 padding-5">
+                    <span>FTE / period</span>
+                </div>
+                <div class="col-xs-12 padding-5">
+                    <span>Running FTE</span>
+                </div>
+                <div class="col-xs-12 padding-5">
+                    <span>Manhours / period</span>
+                </div>
+                <div class="col-xs-12 padding-5">
+                    <span>Running Manhours</span>
+                </div>
+                <div class="col-xs-12 padding-5">
+                    <span>Cost / period</span>
+                </div>
+                <div class="col-xs-12 padding-5">
+                    <span>Running Cost</span>
+                </div>
+            </div>
+        </div>
+        <div id="activitySummaryFTE-detail" class="col-xs-7">
+            <div class="row">
+                <div class="col-xs-2 padding-5 text-center">
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-2 padding-5 text-center">
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-2 padding-5 text-center">
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-2 padding-5 text-center">
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-2 padding-5 text-center">
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-2 padding-5 text-center">
+                    <span>0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--</div>-->

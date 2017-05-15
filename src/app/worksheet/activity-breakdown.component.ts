@@ -1,0 +1,196 @@
+import { Component, OnInit, OnChanges,SimpleChange , ViewChild, Input, Output, EventEmitter, ViewContainerRef, AfterViewInit } from '@angular/core';
+import { Activity } from '../domain/activity.model';
+import { ActivityService } from '../services/activity.service';
+import { OpportunityActivity } from '../domain/opportunity-activity.model';
+import { Role } from '../domain/role.model';
+import { RoleService } from '../services/role.service';
+import { Practice } from '../domain/practice.model';
+import { PracticeService } from '../services/practice.service';
+import { PayLevel } from '../domain/pay-level.model';
+import { PayLevelService } from '../services/pay-level.service';
+
+import { ModalDirective, ModalOptions } from 'ng2-bootstrap/modal';
+
+@Component({
+    selector: 'activity-breakdown',
+    templateUrl: 'activity-breakdown.component.html',
+    styleUrls: ['./activity-breakdown.component.css'],
+    providers: [ActivityService, RoleService, PracticeService, PayLevelService]
+})
+
+export class ActivityBreakdownComponent implements OnInit, AfterViewInit {
+    @Input() opportunityDuration: number;
+    @Input() scheduleGranularity: number;
+    @Input() isServiceTypeValid: Boolean;
+    
+    // @Input() opportunityActivities: OpportunityActivity[];
+    @Input() activities: Activity[];
+    @Input() roles: Role[];
+
+    @Output() activityId: EventEmitter<number> = new EventEmitter<number>();
+
+    @ViewChild('activityModal') public addActivityModal: ModalDirective;
+    @ViewChild('addModalActivity') addModalActivity;
+    @ViewChild('activityList') activityList;
+    @ViewChild('activityRole') activityRole;
+    @ViewChild('activityTechnology') activityTechnology;
+    @ViewChild('activityPayLevel') activityPayLevel;
+    @ViewChild('activityBillability') activityBillability;
+
+    errorMessage: string;
+    isRoleValid: Boolean;
+
+    opportunityActivity: OpportunityActivity;
+    opportunityActivities: OpportunityActivity[];
+    activity: Activity;
+    role: Role;
+    // roles: Role[];
+    practice: Practice;
+    practices: Practice[];
+    payLevel: PayLevel;
+    payLevels: PayLevel[];
+
+    dtActivityBreakdownOptions: any = {};
+    actId: any = '';
+    selectedIdx = 0;
+    items: any = [];
+
+    private body: String;
+    private category: String;
+
+    private notifOptions: ModalOptions = {
+        backdrop: false,
+        keyboard: true,
+        focus: true,
+        ignoreBackdropClick: true
+    };
+
+    constructor(
+        private viewContainerRef: ViewContainerRef,
+        private activityService: ActivityService,
+        private roleService: RoleService,
+        private practiceService: PracticeService,
+        private payLevelService: PayLevelService
+    ) { }
+
+    // ngOnChanges(changes: {[propKey: number]: SimpleChange}){
+    // }
+
+    ngOnInit(): void {
+        this.addActivityModal.config = this.notifOptions;
+
+        this.dtActivityBreakdownOptions = {
+            paging: false,
+            searching: false,
+            info: false
+        };
+
+        this.opportunityActivities = new Array<OpportunityActivity>();
+        this.activity = new Activity();
+       
+        // this.getActivityElements();
+    }
+
+    // check() {
+    //     console.log("-+-+-+- opportunityDuration: ", this.opportunityDuration);
+    //     console.log("-+-+-+- scheduleGranularity: ", this.scheduleGranularity);
+    // }
+
+    ngAfterViewInit(): void {
+        this.actId = this.activityList.nativeElement.querySelector('li:nth-child(n+2)').attributes.id.nodeValue;
+    }
+
+    confirmAction() {
+        this.activityId.emit(this.addModalActivity.nativeElement.value);  
+        this.addActivityModal.hide();
+    }
+
+    addActivity() {
+        this.addActivityModal.show();
+        this.addModalActivity.nativeElement.value = 0;
+    }
+
+    // getActivityElements() {
+    //     this.payLevelService.getPayLevels().then(payLevels => {
+    //         this.payLevels = payLevels;
+    //     }).catch(error => this.errorMessage = <any>error);
+    // }
+
+    // getPracticesPerRole(element) {
+    //     this.practiceService.getPracticesPerRole(element.value).then(practices => {
+    //         this.practices = practices;
+    //     }).catch(error => this.errorMessage = <any>error);
+
+    //     if(element.value == 0) this.isRoleValid = false
+    //     else this.isRoleValid = true;
+    // }
+
+    show() {
+        this.addActivityModal.show();
+    }
+    hide() {
+        this.addActivityModal.hide();
+    }
+    cancelAction() {
+        this.addActivityModal.hide();
+    }
+
+    isSelectActivityValid() {
+        return this.addModalActivity.nativeElement.value == 0;
+    }
+
+    selectItem(index): void {
+        this.selectedIdx = index;
+    }
+
+    createRange(number) {
+        this.items = [];
+        for (var i = 1; i <= number; i++) {
+            this.items.push(i);
+        }
+        return this.items;
+    }
+
+    removeEmptyValue(el) {
+        if (el.children[0].value == 0) el.children[0].remove();
+    }
+
+    public tabs: any[] = [
+        {
+            id: 1,
+            title: 'Requirements Engineering',
+            // removable: true,
+            resource: [{
+                role: 'Project Manager',
+                technology: 'Iterative',
+                paylevel: 'PM',
+                billable: 'Yes',
+                period: [0.2, 1.0]
+            }, {
+                role: 'Developer',
+                technology: 'Iterative',
+                paylevel: 'SE4',
+                billable: 'No',
+                period: [0.3, 1.0, 0.7]
+            }]
+        }, {
+            id: 2,
+            title: 'Application Management',
+            // removable: true,
+            resource: [{
+                role: 'QA',
+                technology: 'Iterative',
+                paylevel: 'SE3',
+                billable: 'No',
+                period: [0.4, 1.0, 0.8, 0.6]
+            }, {
+                role: 'BA',
+                technology: 'Iterative',
+                paylevel: 'SE2',
+                billable: 'Yes',
+                period: [0.5, 1.0, 0.9]
+            }]
+        }
+    ];
+
+}

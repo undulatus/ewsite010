@@ -1,0 +1,4 @@
+<div class="col-md-6 col-md-offset-3 text-center login-container">
+    <h1>e-Stimation Worksheet</h1>
+    <div id="glogin"></div>
+</div>

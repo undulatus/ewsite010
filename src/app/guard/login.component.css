@@ -1,0 +1,40 @@
+.login-container {
+    width: 500px;
+    height: 500px;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+
+    text-align: center;
+    vertical-align: middle;
+
+    color: dodgerblue;
+}
+
+#glogin {
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+
+    cursor: pointer;
+    width: 191px;
+    height: 46px;
+    background-image: url('../../assets/google_signin_buttons/web/1x/btn_google_signin_dark_normal_web.png');
+}
+
+#glogin:hover,#glogin:focus {
+    background-image: url('../../assets/google_signin_buttons/web/1x/btn_google_signin_dark_focus_web.png');
+}
+
+#glogin:active {
+    background-image: url('../../assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png');
+}
