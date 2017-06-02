@@ -1,0 +1,859 @@
+import { Component, Input, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
+import { ModalDirective, ModalOptions } from 'ngx-bootstrap/modal';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LocalStorageService } from 'angular-2-local-storage';
+
+import { Opportunity } from '../domain/opportunity.model';
+import { PayLevel } from '../domain/pay-level.model';
+import { OpportunityActivity } from '../domain/opportunity-activity.model';
+import { Activity } from '../domain/activity.model';
+import { Practice } from '../domain/practice.model';
+import { BusinessUnit } from '../domain/business-unit.model';
+import { ServiceType } from '../domain/service-type.model';
+import { Role } from '../domain/role.model';
+import { ResourceSpecification } from '../domain/resource-specification.model';
+import { Employee } from '../domain/employee.model';
+import { Version } from '../domain/version.model'; 
+import { OpportunityCollaborator } from '../domain/opportunity-collaborator.model';
+import * as moment from 'moment/moment';
+import { TabsetComponent } from 'ngx-bootstrap';
+
+import {
+  ActivityService, BusinessUnitService,
+  ServiceTypeService, RoleService, EmployeeService,
+  PracticeService, ResourceSpecificationService,PayLevelService,
+   OpportunityActivityService, OpportunityService,
+   VersionService
+} from '../services/index';
+@Component({
+  moduleId: module.id,
+  templateUrl: 'worksheet.component.html',
+  styleUrls: ['./worksheet.component.css'],
+  providers: [ActivityService, PracticeService, BusinessUnitService, ServiceTypeService, RoleService,
+    ResourceSpecificationService, OpportunityService, OpportunityActivityService, EmployeeService, PayLevelService, VersionService]
+})
+
+export class WorksheetComponent implements OnInit, AfterViewInit {
+  @ViewChild('staticTabs') staticTabs: TabsetComponent;
+  @ViewChild('addActivityModal') public addActivityModal: ModalDirective;
+  @ViewChild('addActivityModalSelect') addActivityModalSelect;
+  @ViewChild('addRoleModal') public addRoleModal: ModalDirective;
+  @ViewChild('addRoleModalSelect') addRoleModalSelect;
+  @ViewChild('deleteActivityModal') public deleteActivityModal: ModalDirective;
+  @ViewChild('shareOpportunityModal') public shareOpportunityModal: ModalDirective;
+  @ViewChild('saveVersionModal') public saveVersionModal: ModalDirective;
+  @ViewChild('updateVersionModal') public updateVersionModal: ModalDirective;
+  @ViewChild('shareOppotunityModalInputBox') shareOppotunityModalInputBox;
+  @ViewChild('activityList') activityList;
+  @ViewChild('resourceTabs') resourceTabs: any[];
+  @ViewChild('opportunityNameView') opportunityNameView;
+  @ViewChild('opportunityNameEdit') opportunityNameEdit;
+  @ViewChild('durationGranularity') durationGranularity;
+  @ViewChild('businessUnitView') businessUnitView;
+  @ViewChild('businessUnitEdit') businessUnitEdit;
+  @ViewChild('opportunityDuration') opportunityDuration;
+  @ViewChild('serviceTypeView') serviceTypeView;
+  @ViewChild('serviceTypeEdit') serviceTypeEdit;
+  @ViewChild('projectStartDateView') projectStartDateView;
+  @ViewChild('projectStartDateEdit') projectStartDateEdit;
+  @ViewChild('opportunityStatusView') opportunityStatusView;
+  @ViewChild('opportunityStatusEdit') opportunityStatusEdit;
+  @ViewChild('shareOpportunityPermission') shareOpportunityPermission;
+  @ViewChild('projectEndDateView') projectEndDateView;
+
+  private title: String = 'Notification';
+  private body: String = 'The Duration and Resource FTE Schedule will reset. Do you want to continue?';
+  private confirmLabel: String = 'Continue';
+
+  errorMessage: string;
+  returnData: Opportunity;
+  mode: string;
+  opportunityId: number;
+  customActivity: string;
+
+  opportunity: Opportunity;
+  opportunities: Opportunity[];
+  activity: Activity;
+  activities: Activity[];
+  opportunityActivity: OpportunityActivity;
+  opportunityActivities: OpportunityActivity[];
+  businessUnit: BusinessUnit;
+  businessUnits: BusinessUnit[];
+  serviceType: ServiceType;
+  serviceTypes: ServiceType[];
+  selectedRole: number = 0;
+  role: Role;
+  roles: Role[];
+  practice: Practice;
+  practices: Practice[];
+  payLevel: PayLevel;
+  payLevels: PayLevel[];
+  resourceSpecification: ResourceSpecification;
+  resourceSpecifications: any[] = [];
+  startDateString: number;
+  version: Version;
+  versions: Version[];
+
+  employee: Employee;
+  employees: Employee[];
+  employeeList = [];
+  employeeTags: string[] = [];
+  employeeCanView = [];
+  employeeCanEdit = [];
+  opportunityCollaborators: OpportunityCollaborator;
+  editors: string[] = [];
+  viewers: string[] = [];
+  tempTag: string[] = [];
+  prevPermission: any;
+  firstOpen = true;
+  permissionElement: any;
+  savedFTE: any = [];
+  //Dy
+  
+  startDate : string;
+
+  tabIndexToBeDeleted: number;
+  //versions = ['v.1', 'v.2', 'v.3'];
+  fteItems: any = [];
+  selectedIdx = 0;
+  selectedOpportunityActivityId: number;
+  selectedOpportunityActivityName: string;
+  loggedInUser: string; 
+  opportunityOwner: string; 
+
+  public activityTabs: any[] = [];
+
+  constructor(
+    private elRef: ElementRef,
+    private changeDetector: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router,
+    private localStorageService: LocalStorageService,
+    private activityService: ActivityService,
+    private businessUnitService: BusinessUnitService,
+    private serviceTypeService: ServiceTypeService,
+    private roleService: RoleService,
+    private resourceSpecificationService: ResourceSpecificationService,
+    private opportunityService: OpportunityService,
+    private opportunityActivityService: OpportunityActivityService,
+    private employeeService: EmployeeService,
+    private versionService: VersionService,
+    private practiceService: PracticeService,
+    private payLevelService: PayLevelService
+  ) { }
+
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      this.mode = params['mode'];
+      this.opportunityId = params['opportunityId'];
+    });
+
+    this.loggedInUser = 'basil.tabilos';
+    //this.opportunityOwner = this.opportunity.user.username;
+    
+    this.opportunityOwner = 'basil.tabilos';
+    this.opportunity = new Opportunity();
+    this.opportunityActivities = new Array<OpportunityActivity>();
+    this.addActivityDropdown = new Array<Activity>();
+    // this.durationGranularity.nativeElement.value = 'monthly';
+    this.getOpportunityElements();
+    this.fetchOpportunityVersions();
+    console.log(this.opportunity);
+
+
+  }
+
+
+  ngAfterViewInit() {
+    //location.reload();
+    //console.log("this",this.projectStartDate.constructor.bind);
+    this.opportunity.durationGranularity = this.durationGranularity.nativeElement.value;
+    this.opportunity.opportunityId = this.opportunityId;
+    console.log("**********************************");
+    console.log("mode: ", this.mode);
+    console.log("opportunityId: ", this.opportunityId);
+    console.log("**********************************");
+
+
+    this.opportunityService.fetchOpportunity(this.opportunityId).subscribe(response => {
+      if (response != null) {
+        this.opportunity = response;
+        console.log("fetchOpport", response);
+        this.opportunityNameEdit.nativeElement.value = response.opportunityName;
+        this.durationGranularity.nativeElement.value = response.durationGranularity;
+        this.businessUnitEdit.nativeElement.value = response.businessUnit.businessUnitId;
+        this.opportunityStatusEdit.nativeElement.value = response.opportunityStatus;
+        this.serviceTypeEdit.nativeElement.value = response.serviceType.serviceTypeId;
+        this.opportunity.projectStartDate = new Date(response.projectStartDate);
+        this.startDate = moment(response.projectStartDate).format('YYYY-MM-DD').toString();
+        if (response.serviceType.serviceTypeId != 0 || response.serviceType.serviceTypeId != null) {
+          this.opportunityActivities = response.opportunityActivities;
+          this.getRolesList(response.serviceType.serviceTypeId);
+          this.retrieveAllPracticesForDisplay();
+          this.retrieveAllPaylevels();
+          this.configureActivityTabs(response.opportunityActivities);
+          //this.getActivitiesAndRolesByServiceTypeId(this.opportunity);
+        }
+         if (response.durationInWeeks != 0) {
+          if (response.durationGranularity == "monthly") {
+            this.opportunityDuration.nativeElement.value = response.durationInWeeks / 4;
+          } else {
+            this.opportunityDuration.nativeElement.value = response.durationInWeeks;
+          }
+        } else {
+          this.opportunityDuration.nativeElement.value = '';
+        }
+
+
+
+        // console.log("response.projectStartDate: ", response.projectStartDate);
+        // this.projectStartDateEdit.nativeElement.value = '2017-04-06';
+        // this.projectStartDateEdit.nativeElement.value = response.projectStartDate;
+        this.changeDetector.detectChanges();
+      }
+    }, error => this.errorMessage = <any>error);//.catch(error => this.errorMessage = <any>error);
+  }
+
+  getOpportunityElements() {
+    this.businessUnitService.fetchAllBusinessUnit().then(response => {
+      this.businessUnits = response;
+      this.changeDetector.detectChanges();
+    }).catch(error => this.errorMessage = <any>error);
+
+    this.serviceTypeService.fetchAllServiceType().then(response => {
+      this.serviceTypes = response;
+      this.changeDetector.detectChanges();
+    }).catch(error => this.errorMessage = <any>error);
+  }
+  updateOpportunityDurationAndGranularity() {
+    this.opportunityService.updateOpportunity(this.opportunity).subscribe(response => {
+      // reset activityTabs list except the first tab on update
+      while (this.staticTabs.tabs[1] != null) {
+        this.staticTabs.removeTab(this.staticTabs.tabs[1]);
+      }
+      this.configureActivityTabs(response.opportunityActivities);
+      this.changeDetector.detectChanges();
+    });
+  }
+  serviceUpdateOpportunity() {
+    this.opportunityService.updateOpportunity(this.opportunity).subscribe(response => {
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  updateOpportunityName(element) {
+    this.opportunity.opportunityName = element.value;
+    this.serviceUpdateOpportunity();
+  }
+
+  updateBusinessUnit(element) {
+    if (element.children[0].value == 0) element.children[0].remove();
+    this.businessUnit = new BusinessUnit();
+    this.businessUnit.businessUnitId = element.value;
+    this.opportunity.businessUnit = this.businessUnit;
+    this.serviceUpdateOpportunity();
+  }
+
+  updateServiceType(element) {
+    if (element.children[0].value == 0) element.children[0].remove();
+    this.serviceType = new ServiceType();
+    this.serviceType.serviceTypeId = element.value;
+    this.opportunity.serviceType = this.serviceType;
+    this.serviceUpdateOpportunity();
+
+    this.resetActivitiesOnServiceTypeUpdate(this.opportunity);
+  }
+
+  updateDurationGranularity(element) {
+    if (element.value == "monthly" && this.opportunity.durationInWeeks != 0) {
+      //  this.notificationModal.show();
+      this.opportunityDuration.nativeElement.value = "";
+      this.opportunity.durationInWeeks = 0;
+    }
+    if (element.value == "weekly" && this.opportunity.durationInWeeks != 0) {
+      if (this.opportunity.durationGranularity == "monthly") {
+        this.opportunity.durationInWeeks = this.opportunity.durationInWeeks * 4;
+      }
+    }
+    console.log("durationGranularity value is: " + element.value);
+    this.opportunity.durationGranularity = element.value;
+    this.updateOpportunityDurationAndGranularity();
+  }
+
+  updateOpportunityDuration(element) {
+    // user should not be able to input numbers more than the speicified max
+    // no validation for this yet
+    console.log("new value is: " + element.value)
+    this.opportunity.durationInWeeks = element.value;
+    this.updateOpportunityDurationAndGranularity();
+  }
+
+  updateOpportunityStatus(element) {
+    this.opportunity.opportunityStatus = element.value;
+    this.serviceUpdateOpportunity();
+  }
+
+  updateProjectStartDate(event) {
+    // my date picker event properties are: event.date, event.jsdate, event.formatted and event.epoc (Just in case)
+    this.opportunity.projectStartDate = new Date(event);
+    this.serviceUpdateOpportunity();
+  }
+
+  plotFTEValues(fteList, index): number {
+    if (fteList != null) {
+      let fteValue = 0;
+      for (let fte of fteList) {
+        fte.key.resourceScheduleWeekNumber;
+      }
+    }
+    return 0;
+  }
+
+  configureActivityTabs(opportunityActivities) {
+    let i = 0;
+    for (let activity of opportunityActivities) {
+      let active = false;
+      if (i == 0) {
+        active = true;
+      }
+      let resourceSpecifications: any = [];
+
+      if (activity.resourceSpecificationList != null) {
+        for (let resourceSpec of activity.resourceSpecificationList) {
+          this.fteItems = [];
+
+          if (resourceSpec.resourceSchedule != null) {
+            for (var el = 1; el <= this.opportunity.durationInWeeks; el++) {
+              let value: number = 0;
+              for (let fte of resourceSpec.resourceSchedule) {
+                if (el == fte.key.resourceScheduleWeekNumber) {
+                  value = fte.resourceScheduleFTE;
+                  break;
+                }
+                
+              }
+                this.fteItems.push(value);
+            }
+          }
+
+          
+          let spec = {
+            resourceSpecificationId: resourceSpec.resourceSpecificationId,
+            role: resourceSpec.role,
+            practice: resourceSpec.practice,
+            payLevel: resourceSpec.payLevel,
+            opportunityActivityId: resourceSpec.opportunityActivityId,
+            roleStartDate: resourceSpec.roleStartDate,
+            durationInWeeks: resourceSpec.durationInWeeks,
+            totalFTE: resourceSpec.totalFTE,
+            billable: resourceSpec.billable,
+            resourceSchedule: this.fteItems
+          }
+          resourceSpecifications.push(spec);
+        }
+      }
+
+
+      let newTab = {
+        id: activity.activity.activityId,
+        active: active,
+        title: activity.activity.activityName,
+        content: activity.activity.activityName,
+        removable: true,
+        opportunityActivityId: activity.opportunityActivityId,
+        resourceSpecifications: resourceSpecifications
+      }
+      this.activityTabs.push(newTab);
+      i = i + 1;
+    }
+  }
+
+  resetActivitiesOnServiceTypeUpdate(opportunity) {
+    this.opportunityService.updateOpportunityWithLoadedActivities(opportunity).subscribe(response => {
+      // reset activityTabs list except the first tab on update
+      while (this.staticTabs.tabs[1] != null) {
+        this.staticTabs.removeTab(this.staticTabs.tabs[1]);
+      }
+      this.opportunityActivities = response;
+      this.configureActivityTabs(response);
+    });
+    this.getRolesList(opportunity.serviceType.serviceTypeId);
+  }
+
+  getRolesList(serviceTypeId) {
+    this.roleService.fetchRolesByServiceTypeId(serviceTypeId).subscribe(
+      response => this.roles = response
+    );
+  }
+
+  retrieveAllPaylevels(){
+    this.payLevelService.fetchAllPayLevel().subscribe(
+      paylevelList => this.payLevels = paylevelList,
+      error => this.errorMessage = error
+    );
+  }
+  createOpportunity() {
+    console.log('******************* createOpportunity *********************');
+    /* needs to create modal for confirmation of saving the opportunity as per indicated version */
+  }
+
+
+  check() {
+    console.log("test sample");
+  }
+
+  selectItem(index): void {
+    this.selectedIdx = index;
+  }
+
+  createRange(number) {
+    this.fteItems = [];
+    for (var i = 1; i <= number; i++) {
+      this.fteItems.push(i);
+    }
+    return this.fteItems;
+  }
+
+  cancelModal() {
+    this.addActivityModal.hide();
+    this.addRoleModal.hide();
+    this.deleteActivityModal.hide();
+    this.saveVersionModal.hide();
+  }
+
+  deleteActivity(opportunityActivityId, activityName, index) {
+    this.tabIndexToBeDeleted = index + 1;
+    this.selectedOpportunityActivityId = opportunityActivityId;
+    this.selectedOpportunityActivityName = activityName;
+    this.deleteActivityModal.show()
+  }
+
+  confirmDeleteActivity(opportunityActivityId) {
+    this.opportunityActivityService.deleteOpportunityActivity(opportunityActivityId).subscribe(response => {
+      console.log("index to be deleted: " + this.tabIndexToBeDeleted);
+      this.staticTabs.removeTab(this.staticTabs.tabs[this.tabIndexToBeDeleted]);
+
+      let index: number = this.tabIndexToBeDeleted - 1;
+      this.activityTabs.splice(index, 1);
+
+      this.changeDetector.detectChanges();
+    });
+
+    this.deleteActivityModal.hide();
+  }
+  updateFTE(element, index, resourceSpecId) {
+    let weekORMonthNumber = index + 1;
+    console.log("values are " + element.value + " AND " + weekORMonthNumber + " AND resourceSpecId is " + resourceSpecId);
+    let fteValue = element.value;
+    if (fteValue != 0) {
+        this.resourceSpecificationService.saveFTE(resourceSpecId, this.opportunity.durationGranularity, weekORMonthNumber, fteValue).subscribe(
+            response => {
+              this.savedFTE = response
+              if(this.savedFTE != null){
+                console.log("saving of FTE success");
+              }
+            }
+        );
+    }
+  }
+
+  createFTE(element, index, resourceSpecId) {
+    let weekORMonthNumber = index + 1;
+    console.log("values are " + element.value + " AND " + weekORMonthNumber + " AND resourceSpecId is " + resourceSpecId);
+    let fteValue = element.value;
+    if (fteValue != 0) {
+        this.resourceSpecificationService.saveFTE(resourceSpecId, this.opportunity.durationGranularity, weekORMonthNumber, fteValue).subscribe(
+            response => {
+              this.savedFTE = response
+              if(this.savedFTE != null){
+                console.log("updating of FTE success");
+              }
+            }
+        );
+    }
+  }
+
+  //this will be used only for saving the current index of selected activity
+  currentActivityIndex: number;
+  currentOpportunityActivityId: number;
+  currentlySelectedRole: number;
+  //this method just creates a new resourcespecification row in UI
+  addNewRole(oppActivityId, activityIndex, serviceType) {
+    let currentServiceType = serviceType.nativeElement.value;
+    this.getRolesList(currentServiceType);
+    this.currentActivityIndex = activityIndex;
+    this.currentOpportunityActivityId = oppActivityId;
+    this.addRoleModal.show();
+
+  }
+
+  confirmRoleModal(roleId) {
+    this.role = new Role;
+    this.role.roleId = roleId;
+    this.resourceSpecification = new ResourceSpecification;
+    this.resourceSpecification.role = this.role;
+    this.resourceSpecification.opportunityActivityId = this.currentOpportunityActivityId;
+
+    //creating new resource spec here:
+    this.resourceSpecificationService.saveResourceSpecification(this.resourceSpecification).subscribe(resourceSpec => {
+      console.log("+++ add new role & resource spec : ", resourceSpec);
+      if (resourceSpec != null) {
+        let fteSched = [];
+        for(var i=1; i<=this.opportunity.durationInWeeks; i++){
+          fteSched.push(0);
+        }
+        // creating new resource
+        let newResource = {
+          resourceSpecificationId: resourceSpec.resourceSpecificationId,
+          role: resourceSpec.role,
+          technology: resourceSpec.practice,
+          paylevel: resourceSpec.payLevel,
+          billable: resourceSpec.isBillable,
+          resourceSchedule: fteSched
+        };
+
+        let tabHolder = this.activityTabs[this.currentActivityIndex];
+        tabHolder.resourceSpecifications.push(newResource);
+        //creating new fte sched here using resourceSpecId
+        //TODO
+
+      } else {
+        console.log("Failed to create a new resource spec");
+      }
+
+    });
+
+    this.addRoleModal.hide();
+  }
+
+  getRoleValue(roleId, opportunityActivityId) {
+    if (roleId != null) {
+      this.currentlySelectedRole = roleId;
+      this.practiceService.fetchPracticesByRoleId(roleId).subscribe(
+        practiceList => this.practices = practiceList
+      );
+    }
+
+  }
+  retrieveAllPracticesForDisplay(){
+    this.practiceService.fetchAllPractice().subscribe(
+      practiceList => this.practices = practiceList
+    );
+  }
+  getPracticesPerRole(roleId,resourceSpecificationId, opportunityActivityId) {
+    let selectedRole = roleId;
+   // this.practices = [];
+    this.practiceService.fetchPracticesByRoleId(selectedRole).subscribe(
+      practiceList => this.practices = practiceList
+    );
+    //create resource spec here
+    this.resourceSpecification = new ResourceSpecification;
+    this.role = new Role;
+    this.role.roleId = selectedRole;
+    this.resourceSpecification.role = this.role;
+    this.resourceSpecification.resourceSpecificationId = resourceSpecificationId;
+    this.resourceSpecification.opportunityActivityId = opportunityActivityId;
+    this.saveResourceSpecification(this.resourceSpecification);
+  }
+
+  updateResourcePractice(element,resourceSpecId, opportunityActivityId) {
+    let selectedPractice = element.value;
+    this.practice = new Practice;
+    this.practice.practiceId = selectedPractice;
+    this.resourceSpecification = new ResourceSpecification;
+    this.resourceSpecification.resourceSpecificationId = resourceSpecId;
+    
+    this.resourceSpecification.practice = this.practice;
+    this.resourceSpecification.opportunityActivityId = opportunityActivityId;
+    this.updateResourceSpecification(this.resourceSpecification);
+  }
+
+  updatePayLevel(element, resourceSpecId, opportunityActivityId){
+    let selectedPayLevel = element.value;
+    this.resourceSpecification = new ResourceSpecification;
+    this.resourceSpecification.resourceSpecificationId = resourceSpecId;
+    this.payLevel = new PayLevel;
+    this.payLevel.payLevelId = selectedPayLevel;
+    this.resourceSpecification.payLevel = this.payLevel;
+    this.resourceSpecification.opportunityActivityId = opportunityActivityId;
+    this.updateResourceSpecification(this.resourceSpecification);
+    
+  }
+
+  saveResourceSpecification(resourceSpec) {
+    this.resourceSpecificationService.saveResourceSpecification(this.resourceSpecification).subscribe(response => {
+      console.log("+++ add resource response is: ", response);
+      this.resourceSpecification.resourceSpecificationId = response.resourceSpecificationId;
+    });
+  }
+
+  updateResourceSpecification(resourceSpec){
+    this.resourceSpecificationService.updateResourceSpecification(this.resourceSpecification).subscribe(response => {
+      console.log("+++ update resource response is: ", response);
+    });
+  }
+  /*** Omel Code -- Start ***/
+
+  addActivityDropdown: Activity[] = [];
+
+  selectedOpportunityId: number;
+  selectedActivityId: any;
+  selectedVersion: any;
+  saveVersionName: any = 1;
+  updateVersionName: string;
+
+  /* ngModel -- start */
+
+  revertOpportunityName: any;
+  revertBusinessUnit: any;
+  revertServiceType: any;
+  revertStatus: any;
+  revertGranualrity: any;
+  revertDuration: any;
+  revertProjectStart: any;
+  revertProjectEndDate: any;
+  revertOpportunityAcitivities: any = [];
+  
+
+  /* ngModel -- end */
+
+
+
+
+  getDefaultOpportunityActivityList(element) {
+    console.log("selectedServiceType is: " + element.nativeElement.value);
+    let opportunityActivitiesHolder: any = [];
+    //if (element.children[0].nativeElement.value == 0) element.children[0].remove();
+    this.activityService.fetchActivitiesByServiceTypeId(element.nativeElement.value).subscribe(response => {
+      opportunityActivitiesHolder = response;
+      this.sortAddOpporunityActivityList(opportunityActivitiesHolder);
+    });
+
+  }
+
+  sortAddOpporunityActivityList(availableActivitiesList) {
+    this.addActivityDropdown = [];
+    console.log(this.activityTabs);
+
+    for (let availableActivity of availableActivitiesList) {
+      let isDuplicate: boolean = false;
+      console.log("recall activities response is: " + availableActivity.activityId);
+      for (let refOpportunityActivity of this.activityTabs) {
+        console.log("oppActivities are: " + refOpportunityActivity.id);
+        if (availableActivity.activityId == refOpportunityActivity.id) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (!isDuplicate) this.addActivityDropdown.push(availableActivity);
+    }
+  }
+
+  confirmAddActivityModal(activityId) {
+    let forAddOpportunityActivity: OpportunityActivity = new OpportunityActivity();
+    let forAddActivity: Activity = new Activity();
+
+    if (activityId === "other" && this.customActivity) {
+
+      this.activityService.saveCustomActivity(this.customActivity).subscribe(response => {
+        forAddActivity.activityId = response.activityId;
+        forAddOpportunityActivity.opportunityId = this.opportunity.opportunityId;
+        forAddOpportunityActivity.activity = forAddActivity;
+
+        this.opportunityActivityService.saveOpportunityActivity(forAddOpportunityActivity).subscribe(response => {
+          this.opportunityActivities.push(response);
+          let activityTab = {
+            id: response.activity.activityId,
+            active: true,
+            title: this.customActivity,
+            content: this.customActivity,
+            removable: true,
+            opportunityActivityId: response.opportunityActivityId
+          }
+          this.activityTabs.push(activityTab);
+        });
+
+      });
+      this.addActivityModal.hide();
+      //  location.reload();
+
+    } else {
+
+      forAddOpportunityActivity.opportunityId = this.opportunity.opportunityId;
+      forAddActivity.activityId = activityId;
+      forAddOpportunityActivity.activity = forAddActivity;
+
+      this.opportunityActivityService.saveOpportunityActivity(forAddOpportunityActivity).subscribe(response => {
+        this.opportunityActivities.push(response);
+        let activityTab = {
+          id: response.activity.activityId,
+          active: true,
+          title: response.activity.activityName,
+          content: response.activity.activityName,
+          removable: true,
+          opportunityActivityId: response.opportunityActivityId
+        }
+        this.activityTabs.push(activityTab);
+      });
+      this.addActivityModal.hide();
+      // location.reload();
+
+    }
+  };
+
+  saveOpportunityVersion(versionName) {
+    let mode: any = 'edit';
+    this.versionService.saveVersion(this.opportunityId, versionName).subscribe(response =>{
+
+      this.saveVersionName = this.saveVersionName + 1;
+
+      this.fetchOpportunityVersions();
+      this.changeDetector.detectChanges();
+    });
+
+    this.router.navigate(['/worksheet', mode, this.opportunity.opportunityId]);
+    this.saveVersionModal.hide();
+
+  };
+
+  updateOpportunityVersion() {
+    this.versionService.saveVersion(this.opportunityId, this.selectedVersion).subscribe(response =>{
+
+    });
+
+    this.updateVersionModal.hide();
+  }
+
+  revertVersion(){
+    this.versionService.revertVersion(this.opportunityId, this.selectedVersion).subscribe(response =>{
+      this.revertOpportunityName = response.opportunityName;
+      this.revertBusinessUnit = response.businessUnit.businessUnitId;
+      this.revertServiceType = response.serviceType.serviceTypeId;
+      this.revertStatus = response.opportunityStatus;
+      this.revertDuration = response.durationInWeeks;
+      this.revertGranualrity = response.durationGranularity; 
+
+    });
+  }
+
+  // Omel -- TODO
+  fetchVersion(versionName) {
+    console.log(versionName);
+    this.selectedVersion = versionName;
+    //this.versionNames = versionNames;
+    //window.open();
+    //this.versionService.fetchVersion(this.opportunityId, versionName).subscribe(response =>{
+      
+    //this.opportunity = response;
+    // });
+  };
+
+  
+  fetchOpportunityVersions() {
+    this.versionService.fetchOpportunityVersions(this.opportunityId).subscribe(response =>{
+      this.versions = response;   
+    });
+  };
+
+  /*** Omel Code -- End ***/
+
+  // Dy Start
+
+  shareOpportunity() {
+    this.employeeTags = [];
+    this.getEmployeeForAutoComplete();
+    this.getEmployeesForSharing();
+    this.shareOpportunityModal.show();
+  }
+
+  getEmployeeForAutoComplete() {
+    this.employeeList = [];
+    this.employeeService.fetchAllEmployee().subscribe(response => {
+      this.employees = response;
+      this.changeDetector.detectChanges();
+
+      for (let k in this.employees) {
+        this.employeeList.push(this.employees[k]['username']);
+      }
+      console.log("loaded: ", this.employeeList.length);
+    });
+  }
+
+  onModalHidden() {
+    this.firstOpen = true;
+  }
+
+  onSelectChange() {
+
+    if (this.employeeTags.length != 0) {
+      this.employeeTags.forEach(empList => {
+        this.tempTag.push(empList);
+      });
+    }
+
+    if (!this.firstOpen) {
+      this.opportunity.permission = this.prevPermission;
+      this.saveSharedopportunity(this.tempTag);
+    }
+    // Set delay for changes to take effect.
+    setTimeout(() => { this.getEmployeesForSharing() }, 1000);
+  }
+
+
+  getEmployeesForSharing() {
+    this.employeeService.fetchOpportunityCollaborators(this.opportunity.opportunityId)
+      .subscribe(response => {
+        console.log("Employee Service Response", response);
+        this.opportunityCollaborators = response;
+
+        this.editors = this.opportunityCollaborators.usersWithEdit;
+        console.log("Editors: " + this.opportunityCollaborators.usersWithEdit);
+        this.viewers = this.opportunityCollaborators.usersWithView;
+        console.log("viewers: " + this.opportunityCollaborators.usersWithView.length);
+
+        this.permissionElement = this.shareOpportunityPermission.nativeElement;
+
+        this.opportunity.permission = this.shareOpportunityPermission.nativeElement.value;
+
+        this.employeeTags = [];
+        if (this.permissionElement.value == 'EDIT') {
+
+          this.editors.forEach(edits => {
+            this.employeeTags.push(edits);
+          });
+
+        } else if (this.permissionElement.value == 'VIEW') {
+
+          this.viewers.forEach(views => {
+            this.employeeTags.push(views);
+          });
+
+        }
+
+        this.tempTag = [];
+        this.prevPermission = this.permissionElement.value;
+
+        this.firstOpen = false;
+
+      });
+  }
+
+  doneButtonFunction(employeeTags) {
+    this.opportunity.permission = this.shareOpportunityPermission.nativeElement.value;
+    this.saveSharedopportunity(employeeTags);
+    this.shareOpportunityModal.hide();
+  }
+
+  saveSharedopportunity(employeeTags): any {
+    let status: any;
+
+    this.opportunityService.saveOpportunityforSharing(this.opportunity, employeeTags).subscribe(response => {
+      console.log("+++ response from shared save ", response);
+      this.changeDetector.detectChanges();
+    });
+    return status;
+  }
+
+  //Dy End
+
+}

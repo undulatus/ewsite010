@@ -1,0 +1,145 @@
+import { Component, NgZone, OnInit, ViewChild, ViewContainerRef, ChangeDetectorRef } from '@angular/core';
+import { Headers, Http } from "@angular/http";
+import { Opportunity } from '../domain/opportunity.model';
+import { Pipe, PipeTransform } from '@angular/core';
+import { OpportunityService } from '../services/opportunity.service';
+import { OpportunityListService } from './opportunity.service';
+import 'rxjs/add/operator/toPromise';
+import { DataTableDirective } from 'angular-datatables';
+import { NotificationModalComponent } from '../modal/notification-modal.component';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs/Rx';
+import { AppComponent } from '../app.component';
+import { LocalStorageService } from 'angular-2-local-storage';
+declare var $: any;
+import 'datatables.net';
+import { OpportunityDashboard } from "../domain/opportunity-dashboard.model";
+import { User } from "../domain/user.model";
+
+
+
+@Component({
+  moduleId: module.id,
+  templateUrl: 'dashboard.component.html',
+  providers: [OpportunityService, OpportunityListService]
+})
+export class DashboardComponent implements OnInit {
+  @ViewChild('notificationModal') notificationModal: NotificationModalComponent;
+
+  private title: String = 'Notification';
+  private body: String = 'You clicked this modal!';
+  private confirmLabel: String = 'Ok';
+  viewMode: string = 'view';
+  errorMessage: string;
+  opportunities: OpportunityDashboard[] = [];
+  myOpportunities: Opportunity[] = [];
+  dtOptions: DataTables.Settings = {};
+  dtOptions2: DataTables.Settings = {};
+  dtTrigger: Subject<any> = new Subject();
+  dtTrigger2: Subject<any> = new Subject();
+  mode: string = '';
+
+  opportunity: Opportunity;
+  opportunityDashboard: OpportunityDashboard;
+  opportunityId: number;
+
+  constructor(
+    private router: Router,
+    private zone: NgZone,
+    private route: ActivatedRoute,
+    private http: Http,
+    private opportunityService: OpportunityService,
+    private opportunityListService: OpportunityListService,
+    private viewContainerRef: ViewContainerRef,
+    private changeDetector: ChangeDetectorRef,
+    private localStorageService: LocalStorageService
+  ) { }
+
+  ngOnInit(): void {
+    let username = localStorage.getItem('username');
+    this.getOpportunities(username);
+    this.initDatatable();
+  }
+
+  lockUnlockOpportunity(status: string, opportunityId: number) {
+    let isLocked: boolean;
+    if (status == 'locked') {
+      isLocked = true;
+    } else if (status == 'unlocked') {
+      isLocked = false;
+    }
+    this.opportunityListService.updateOpportunityStatus(isLocked, opportunityId).then(result => {
+      console.log("RESULT IS: " + result);
+
+      if (result == 1) {
+        this.zone.runOutsideAngular(() => {
+          location.reload();
+        });
+      }
+    }).catch(error => this.errorMessage = <any>error);
+  }
+  createOpportunity() {
+    this.mode = 'create';
+    this.opportunity = new Opportunity();
+    this.opportunityService.saveOpportunity(this.opportunity).then(response => {
+      this.opportunityId = response.opportunityId;
+      this.router.navigate(['/worksheet', this.mode, this.opportunityId]);
+      this.changeDetector.detectChanges();
+    }).catch(error => this.errorMessage = <any>error);
+  }
+  viewOpportunity(id: number) {
+    this.mode = 'view';
+    this.router.navigate(['/worksheet', this.mode, id]);
+  }
+  updateOpportunity(id: number) {
+    this.mode = 'update';
+    this.router.navigate(['/worksheet', this.mode, id]);
+  }
+
+  getOpportunities(userName: any) {
+    this.opportunityListService.getOwnedOpportunities(userName).then(myOpportunities => {
+      this.myOpportunities = myOpportunities;
+      console.log("getOpportunityElements myOpportunities: ", myOpportunities);
+      this.dtTrigger.next();
+      this.changeDetector.detectChanges();
+    }).catch(error => this.errorMessage = <any>error);
+
+    this.opportunityListService.getOpportunities(userName).then(opportunities => {
+      this.opportunities = opportunities;
+      console.log("getOpportunityElements other opportunities: ", opportunities);
+      this.dtTrigger2.next();
+      this.changeDetector.detectChanges();
+    }).catch(error => this.errorMessage = <any>error);
+
+
+  }
+
+  initDatatable(): void {
+    this.dtOptions2 = {
+      autoWidth: true,
+      lengthChange: false,
+      searching: false,
+      columnDefs: [
+        { targets: 0, orderable: true },
+        { targets: 1, orderable: true },
+        { targets: 2, orderable: true },
+        { targets: 3, orderable: true },
+        { targets: 4, orderable: false }
+      ]
+    };
+
+    this.dtOptions = {
+      autoWidth: true,
+      lengthChange: false,
+      searching: false,
+      columnDefs: [
+        { targets: 0, orderable: true },
+        { targets: 1, orderable: true },
+        { targets: 2, orderable: true },
+        { targets: 3, orderable: true },
+        { targets: 4, orderable: false }
+      ]
+    };
+  }
+
+}

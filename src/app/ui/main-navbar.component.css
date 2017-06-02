@@ -1,0 +1,19 @@
+a.navbar-brand{
+    color: #feeed6 !important;
+}
+li>a{
+    color: #feeed6 !important;
+}
+ul.dropdown-menu{
+    color: #feeed6;
+    background-color: #586667;
+}
+nav{
+    margin-bottom: 0px !important;
+}
+.adjust-nav-height{
+    padding-top: 56px;
+}
+.nav-height{
+    height: 50px;
+}

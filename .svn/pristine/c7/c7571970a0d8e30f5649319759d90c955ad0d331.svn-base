@@ -1,0 +1,449 @@
+<div class="padding-top-10 padding-left-15 padding-right-15 padding-bottom-10 component-page-holder">
+
+	<div id="opportunityInformation" class="padding-0">
+		<!-- Dy Start -->
+		<div class="pull-right">
+			<button (click)="shareOpportunity()" class="btn btn-primary">Share</button>
+		</div>
+		<!-- Dy End -->
+		<form class="container-fluid">
+			<div *ngIf="mode == 'edit' || mode == 'view'" class="row form-group">
+				<label  for="activeCurrentVersion" class="col-xs-2">Version</label>
+				<div class="col-xs-2" [ngClass]="{'margin-top-15 padding-left-30': mode == 'create'}">
+					<select #versionNames [(ngModel)]="selectedVersion" name="versionNames" *ngIf="mode == 'edit' || mode == 'view'" class="form-control" id="versionNames" (change)="fetchVersion(versionNames.value)" required>
+						<option *ngFor="let vr of versions" [value]="vr.key.versionName">{{vr.key.versionName}}</option>
+					</select>
+				</div>
+
+				<button class="btn btn-primary" (click)="revertVersion()">Restore this Version</button>
+			</div>
+
+			<div class="row form-group">
+				<label for="opportunityName" class="padding-left-25 col-xs-2">Opportunity Name</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #opportunityNameView>Dan Opportunity</span>
+					<input *ngIf="mode == 'edit' || mode == 'create'" #opportunityNameEdit [(ngModel)]="revertOpportunityName" (blur)="updateOpportunityName(opportunityNameEdit)"
+					 type="text" class="form-control" id="opportunityName" name="opportunityName" required>
+				</div>
+
+				<label for="durationGranularity" class="col-xs-2">Duration Granularity</label>
+				<div class="col-xs-2">
+					<select #durationGranularity (change)="updateDurationGranularity(durationGranularity)" class="form-control" id="durationGranularity"
+					 name="durationGranularity" required>
+						<option value="monthly">Month</option>
+						<option value="weekly">Week</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="businessUnit" class=" col-xs-2">Business Unit</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #businessUnitView>Health Care</span>
+					<select *ngIf="mode == 'edit' || mode == 'create'" #businessUnitEdit [(ngModel)]="revertBusinessUnit" (change)="updateBusinessUnit(businessUnitEdit)" class="form-control"
+					 id="businessUnit" name="businessUnit" required>
+						<option value="0"></option>
+						<option *ngFor="let businessUnit of businessUnits" [value]="businessUnit.businessUnitId">{{businessUnit?.businessUnitName}}</option>
+					</select>
+				</div>
+
+				<label for="opportunityDuration" class=" col-xs-2">Opportunity Duration</label>
+				<div class="col-xs-2">
+					<input #opportunityDuration (blur)="updateOpportunityDuration(opportunityDuration)" type="number" class="form-control" id="opportunityDuration"
+					 name="opportunityDuration" min="1" [max]="durationGranularity.value == 'monthly' ? 12 : 48" [(ngModel)]="opportunity.durationInWeeks"
+					 required>
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="serviceType" class=" col-xs-2">Service Type</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #serviceTypeView>Application Development</span>
+					<select *ngIf="mode == 'edit' || mode == 'create'" #serviceTypeEdit [(ngModel)]="revertServiceType" (change)="updateServiceType(serviceTypeEdit)" class="form-control"
+					 id="serviceType" name="serviceType" required>
+						<option value="0"></option>
+						<option *ngFor="let serviceType of serviceTypes" [value]="serviceType.serviceTypeId">{{serviceType?.serviceTypeName}}</option>
+					</select>
+				</div>
+
+				<label for="projectStartDate" class="col-xs-2">Projected Start Date</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #projectStartDateView>April 17, 2017</span>
+					<!--<input *ngIf="mode == 'edit' || mode == 'create'" #opportunityStatusEdit (blur)="updateOpportunityStatus(opportunityStatusEdit)"-->
+					<input type="date" *ngIf="mode == 'edit' || mode == 'create'" class="form-control" #projectStartDateEdit [(ngModel)]="startDate"  name="projectStartDateEdit" (ngModelChange)="updateProjectStartDate($event)"/>
+					 
+				</div>
+			</div>
+
+			<div class="row form-group">
+				<label for="opportunityStatus" class=" col-xs-2">Opportunity Status</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'view'" #opportunityStatusView>Active</span>
+					<input *ngIf="mode == 'edit' || mode == 'create'" #opportunityStatusEdit (blur)="updateOpportunityStatus(opportunityStatusEdit)"
+					 type="text" class="form-control" id="opportunityStatus" name="opportunityStatus" [(ngModel)]="opportunity.documentStatus"
+					 required>
+				</div>
+
+					<label for="projectEndDate" class="col-xs-offset-7 col-xs-2">Projected End Date</label>
+				<div class="col-xs-2">
+					<span *ngIf="mode == 'create'" #projectEndDateView>April 17, 2017</span>
+
+					<!--<my-date-picker *ngIf="mode == 'edit' || mode == 'create'" #projectEndDateEdit [options]="datePickerOptions" (dateChanged)="updateProjectStartDate($event)"></my-date-picker>-->
+					<!--<my-date-picker *ngIf="mode == 'edit' || mode == 'create'" #projectStartDateEdit [(ngModel)]="projectStartDate" [options]="datePickerOptions" (dateChanged)="updateProjectStartDate($event)"></my-date-picker>-->
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<div id="activityBreakdown" class="container-fluid">
+		<div class="row">
+			<div class="col-xs-12">
+				<tabset #staticTabs>
+					<tab id="addActivityButton" [active]="false" (click)="$event.preventDefault()">
+						<template tabHeading>
+							<div class="" (click)="addActivityModal.show(); getDefaultOpportunityActivityList(serviceTypeEdit)"><span class="glyphicon glyphicon-plus"></span></div>
+						</template>
+					</tab>
+					<tab *ngFor="let activity of activityTabs; let activityIndex = index" [active]="activity.active">
+						<template tabHeading>
+							{{activity.title}}<span (click)="deleteActivity(activity?.opportunityActivityId, activity.title, activityIndex)" class="padding-left-10 glyphicon glyphicon-remove-circle"></span>
+						</template>
+						{{activity?.content}}{{activity?.id}}
+						<div class="col-xs-12">
+							<div class="row">
+								<div class="col-lg-5">
+									<div id="activityBreakdown-header" class="row">
+										<div class="col-xs-4 padding-10px-5px">
+											<a *ngIf="mode == 'edit' || mode == 'create'" (click)="addNewRole(activity?.opportunityActivityId,activityIndex,serviceTypeEdit)"
+											 class="glyphicon glyphicon-plus-sign pull-left"></a>
+											<span>Role</span>
+										</div>
+										<div class="col-xs-4 padding-10px-5px">
+											<span>Technology / Practice</span>
+										</div>
+										<div class="col-xs-2 padding-10px-5px">
+											<span>Pay Level</span>
+										</div>
+										<div class="col-xs-2 padding-10px-5px">
+											<span>Billable</span>
+										</div>
+									</div>
+
+								</div>
+								<div class="col-lg-7">
+									<div id="activityBreakdown-dateHeader" class="row">
+										<div class="col-xs-12 padding-10px-5px text-center">
+											<span *ngIf="durationGranularity.value == 'monthly'">Months</span>
+											<span *ngIf="durationGranularity.value == 'weekly'">Weeks</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div #resourceTabs *ngFor="let resource of activity?.resourceSpecifications; let rsIndex= index" class="row activityBreakdown-resource-row">
+								<div class="col-lg-5">
+									<div class="row">
+										{{resource?.resourceSpecificationId}}
+										<div class="activityBreakdown-resource-info">
+											<div class="col-xs-4">
+												<a *ngIf="mode == 'edit' || mode == 'create'" (click)="deleteResourceModal.show()" class="glyphicon glyphicon-trash pull-left"></a>
+												<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.role}}</span>
+
+												<select *ngIf="mode == 'edit' || mode == 'create'" [(ngModel)]="resource?.role.roleId" #activityRole (change)="getPracticesPerRole(activityRole,resource?.resourceSpecificationId, activity?.opportunityActivityId)"
+												 class="form-control pull-right" id="activityRole" name="activityRole" required>
+                                                    <option value="0"></option>
+                                                    <option *ngFor="let role of roles" [value]="role.roleId" [selected]="resource?.role.roleId == role.roleId" >{{role?.roleName}}</option>
+                                                </select>
+											</div>
+											<div class="col-xs-4">
+												<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.technology}}</span>
+												<select *ngIf="mode == 'edit' || mode == 'create'" (click)="getRoleValue(resource?.role.roleId, activity?.opportunityActivityId)"
+												 (change)="updateResourcePractice(activityTechnology,resource?.resourceSpecificationId,activity?.opportunityActivityId)"
+												 #activityTechnology class="form-control" id="activityTechnology" name="activityTechnology" required>
+                                                    <option value="0"></option>
+                                                    <option *ngFor="let practice of practices" [value]="practice.practiceId" [selected]="resource?.practice?.practiceId == practice.practiceId">{{practice?.practiceName}}</option>
+                                                </select>
+											</div>
+											<div class="col-xs-2">
+												<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.paylevel}}</span>
+												<select *ngIf="mode == 'edit' || mode == 'create'" #activityPayLevel (change)="updatePayLevel(activityPayLevel,resource?.resourceSpecificationId,activity?.opportunityActivityId)" class="form-control" id="activityPayLevel" name="activityPayLevel"
+												 required>
+                                                    <option value="0"></option>
+                                                    <option *ngFor="let payLevel of payLevels" [value]="payLevel.payLevelId" [selected]="resource?.payLevel?.payLevelId == payLevel.payLevelId" >{{payLevel?.payLevelName}}</option>
+                                                </select>
+											</div>
+											<div class="col-xs-2">
+												<span *ngIf="mode == 'view'" class="margin-left-10 line-height-30px">{{resource?.billable}}</span>
+												<select *ngIf="mode == 'edit' || mode == 'create'" #activityBillability class="form-control" id="activityBillability" name="activityBillability"
+												 required>
+                                                    <option value=""></option>
+                                                    <option value="1">Yes</option>
+                                                    <option value="0">No</option>
+                                                </select>
+											</div>
+										</div>
+
+									</div>
+								</div>
+								<div class="col-lg-7">
+									<div class="row activityBreakdown-period-row">
+										<div>
+											<div class="col-xs-12">
+												<div *ngFor="let fte of resource?.resourceSchedule; let fteIndex = index" class="period-width-{{opportunityDuration.value}} period-div-header padding-5 text-center">
+													<span>{{ fteIndex + 1 }}</span>
+												</div>
+											</div>
+										</div>
+										<div>
+											<div class="col-xs-12 activityBreakdown-resource-info">
+												<div *ngFor="let fte of resource?.resourceSchedule; let fteIndex = index" id="per{{fteIndex+1}}" class="period-width-{{opportunityDuration.value}} period-div-content padding-5 text-center">
+													<span *ngIf="mode == 'view'" class="line-height-30px">{{fte}}</span>
+
+													<input *ngIf="(mode == 'edit' || mode == 'create') && fte == 0 " #fteDuration [value]="fte" (blur)="createFTE(fteDuration, fteIndex, resource?.resourceSpecificationId)"
+													 type="text" placeholder="0" class="form-control" />
+													 <input *ngIf="(mode == 'edit' || mode == 'create') && fte != 0 " #fteDuration [value]="fte" (blur)="updateFTE(fteDuration, fteIndex, resource?.resourceSpecificationId)"
+													 type="text" placeholder="0" class="form-control" />
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</tab>
+				</tabset>
+			</div>
+		</div>
+	</div>
+	<div id="activitySummary" class="container-fluid padding-top-10">
+		<activity-summary [activityTabs]="activityTabs"></activity-summary>
+	</div>
+
+	<div bsModal #addActivityModal="bs-modal" id="addActivityModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addActivityModalLabel"
+	 aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title pull-left">Add Activity</h4>
+					<button type="button" class="close pull-right" aria-label="Close" (click)="addActivityModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+				</div>
+				<div class="modal-body">
+					<div class="container-fluid">
+						<div class="row">
+							<span for="addActivityModalSelect">Activity:</span>
+							<div>
+								<select #addActivityModalSelect class="form-control" id="addActivityModalSelect" name="addActivityModalSelect" required>
+										<option value="0"></option>
+										<option *ngFor="let addActivity of addActivityDropdown" [value]="addActivity?.activityId">{{addActivity?.activityName}}</option>
+										<option value="other">Other</option>
+									</select>
+							</div>
+							<div *ngIf="addActivityModalSelect.value == 'other'">
+								<span>Please input other Activity:</span>
+								<input type="text" class="form-control" [(ngModel)]="customActivity" required>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary btn-sm" (click)="confirmAddActivityModal(addActivityModalSelect.value)">
+							Confirm
+						</button>
+					<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div bsModal #addRoleModal="bs-modal" id="addRoleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addRoleModalLabel"
+	 aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title pull-left">Add Resource</h4>
+					<button type="button" class="close pull-right" aria-label="Close" (click)="addRoleModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+				</div>
+				<div class="modal-body">
+					<div class="container-fluid">
+						<div class="row">
+							<span for="addRoleModalSelect">Role:</span>
+							<div>
+								<select #addRoleModalSelect class="form-control" id="addRoleModalSelect" name="addRoleModalSelect" required>
+										<option value="0"></option>
+										<option *ngFor="let role of roles" [value]="role.roleId">{{role?.roleName}}</option>
+									</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary btn-sm" (click)="confirmRoleModal(addRoleModalSelect.value)">
+							Confirm
+						</button>
+					<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div bsModal #deleteActivityModal="bs-modal" id="deleteActivityModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteActivityModalLabel"
+	 aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title pull-left">Delete Activity</h4>
+					<button type="button" class="close pull-right" aria-label="Close" (click)="deleteActivityModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+				</div>
+				<div class="modal-body">
+					<div class="text-center">
+						<span>{{selectedOpportunityActivityName}}</span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary btn-sm" (click)="confirmDeleteActivity(selectedOpportunityActivityId); ">
+							Confirm
+						</button>
+					<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- OMEL CODE START -->
+	<div bsModal #saveVersionModal="bs-modal" id="saveVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveVersionModalLabel"
+	 aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title pull-left">Save Version</h4>
+					<button type="button" class="close pull-right" aria-label="Close" (click)="saveVersionModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+				</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row">
+								<span for="saveVersionModal">Set Version as:</span>
+								<div>
+									<input type="text" class="form-control" [(ngModel)]="saveVersionName" required readonly>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary btn-sm" (click)="saveOpportunityVersion(saveVersionName)">
+							Confirm
+						</button>
+					<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+				</div>
+			</div>
+		</div>
+		<div bsModal #updateVersionModal="bs-modal" id="updateVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="updateVersionModal"
+		 aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title pull-left">Update Version {{selectedVersion}}</h4>
+						<button type="button" class="close pull-right" aria-label="Close" (click)="updateVersionModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row">
+								<div class="text-center">
+									<span>Are you sure you want to overwrite existing version?</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary btn-sm" (click)="updateOpportunityVersion()">
+							Accept
+						</button>
+						<button type="button" class="btn btn-default btn-sm" (click)="cancelModal()">
+							Cancel
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- OMEL CODE END -->
+
+<!-- Dy Start -->
+<div bsModal #shareOpportunityModal="bs-modal" id="shareOpportunityModal" class="modal fade" tabindex="-1"
+ role="dialog" aria-labelledby="shareOpportunityModalLabel" (onHidden)="onModalHidden()"
+		 aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title pull-left">Share Opportunity</h4>
+						<button type="button" class="close pull-right" aria-label="Close" (click)="shareOpportunityModal.hide()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div *ngFor="let alert of alerts">
+					<alert [type]="alert.type" [dismissOnTimeout]="alert.timeout">{{alert.msg}}</alert>
+					</div>
+					<div class="modal-body">
+						<div>
+							<!--<label for="shareOpportunity" class="col-xs-2">People</label>
+							<input [(ngModel)]="selected" [typeahead]="employees"
+							 typeaheadOptionField = "username"
+							 class="form-control">
+							 </div>
+							 <div>-->
+								 <!--(change)="updatePermission(shareOpportunityPermission)"-->
+								 <div>
+								 <select #shareOpportunityPermission (change)="onSelectChange()"  class="form-control"
+					 id="opportunityPermission" name="opportunityPermission">
+						<option value="VIEW">Can View</option>
+						<option value="EDIT">Can View/Edit</option>
+					</select>
+								 </div>
+								<div>
+							<rl-tag-input [(ngModel)]="employeeTags" [autocompleteItems]="employeeList" [autocomplete]="true" [autocompleteMustMatch] placeholder="Enter names" id="employeeTagsForSharing" ></rl-tag-input>
+							 </div>
+					</div>
+					<div class="modal-footer">
+						<span class="pull-left">Viewers: {{opportunityCollaborators?.usersWithView}}</span>
+						<br/>
+						<span class="pull-left">Editors:{{opportunityCollaborators?.usersWithEdit}}</span>
+						<button type="button" class="btn btn-primary btn-sm" (click)="doneButtonFunction(employeeTags)">
+							Done
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+<!-- Dy End -->
+
+
+
+	<div id="oppotunityButtons" class="container">
+		<div class="pull-right">
+			<button (click)="saveVersionModal.show()" class="btn btn-primary">Save Version</button>
+		</div>
+		<div class="pull-right" *ngIf="mode == 'edit'">
+			<button (click)="updateVersionModal.show()" class="btn btn-success">Update Version</button>
+		</div>
+	</div>
+
+</div>
